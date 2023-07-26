@@ -1,7 +1,7 @@
 syntax = "proto3";
-option go_package = "pingtunnel";
+option go_package = "pkg/msg";
 
-message MyMsg {
+message PingMsg {
   enum TYPE {
     DATA = 0;
     PING = 1;
