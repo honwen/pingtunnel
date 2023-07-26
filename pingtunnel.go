@@ -2,14 +2,16 @@ package pingtunnel
 
 import (
 	"encoding/binary"
-	"github.com/esrrhs/gohome/common"
-	"github.com/esrrhs/gohome/loggo"
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/icmp"
-	"golang.org/x/net/ipv4"
+	"log"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/esrrhs/pingtunnel/pkg/common"
+	"github.com/esrrhs/pingtunnel/pkg/msg"
+	"golang.org/x/net/icmp"
+	"golang.org/x/net/ipv4"
+	"google.golang.org/protobuf/proto"
 )
 
 func sendICMP(id int, sequence int, conn icmp.PacketConn, server *net.IPAddr, target string,
@@ -17,7 +19,7 @@ func sendICMP(id int, sequence int, conn icmp.PacketConn, server *net.IPAddr, ta
 	tcpmode int, tcpmode_buffer_size int, tcpmode_maxwin int, tcpmode_resend_time int, tcpmode_compress int, tcpmode_stat int,
 	timeout int) {
 
-	m := &MyMsg{
+	m := &msg.PingMsg{
 		Id:                  connId,
 		Type:                (int32)(msgType),
 		Target:              target,
@@ -31,12 +33,12 @@ func sendICMP(id int, sequence int, conn icmp.PacketConn, server *net.IPAddr, ta
 		TcpmodeCompress:     (int32)(tcpmode_compress),
 		TcpmodeStat:         (int32)(tcpmode_stat),
 		Timeout:             (int32)(timeout),
-		Magic:               (int32)(MyMsg_MAGIC),
+		Magic:               (int32)(msg.PingMsg_MAGIC),
 	}
 
 	mb, err := proto.Marshal(m)
 	if err != nil {
-		loggo.Error("sendICMP Marshal MyMsg error %s %s", server.String(), err)
+		log.Printf("sendICMP Marshal msg.PingMsg error %s %s", server.String(), err)
 		return
 	}
 
@@ -54,7 +56,7 @@ func sendICMP(id int, sequence int, conn icmp.PacketConn, server *net.IPAddr, ta
 
 	bytes, err := msg.Marshal(nil)
 	if err != nil {
-		loggo.Error("sendICMP Marshal error %s %s", server.String(), err)
+		log.Printf("sendICMP Marshal error %s %s", server.String(), err)
 		return
 	}
 
@@ -76,7 +78,7 @@ func recvICMP(workResultLock *sync.WaitGroup, exit *bool, conn icmp.PacketConn, 
 		if err != nil {
 			nerr, ok := err.(net.Error)
 			if !ok || !nerr.Timeout() {
-				loggo.Info("Error read icmp message %s", err)
+				log.Printf("Error read icmp message %s", err)
 				continue
 			}
 		}
@@ -88,15 +90,15 @@ func recvICMP(workResultLock *sync.WaitGroup, exit *bool, conn icmp.PacketConn, 
 		echoId := int(binary.BigEndian.Uint16(bytes[4:6]))
 		echoSeq := int(binary.BigEndian.Uint16(bytes[6:8]))
 
-		my := &MyMsg{}
+		my := &msg.PingMsg{}
 		err = proto.Unmarshal(bytes[8:n], my)
 		if err != nil {
-			loggo.Debug("Unmarshal MyMsg error: %s", err)
+			log.Printf("Unmarshal msg.PingMsg error: %s", err)
 			continue
 		}
 
-		if my.Magic != (int32)(MyMsg_MAGIC) {
-			loggo.Debug("processPacket data invalid %s", my.Id)
+		if my.Magic != (int32)(msg.PingMsg_MAGIC) {
+			log.Printf("processPacket data invalid %s", my.Id)
 			continue
 		}
 
@@ -107,7 +109,7 @@ func recvICMP(workResultLock *sync.WaitGroup, exit *bool, conn icmp.PacketConn, 
 }
 
 type Packet struct {
-	my      *MyMsg
+	my      *msg.PingMsg
 	src     *net.IPAddr
 	echoId  int
 	echoSeq int

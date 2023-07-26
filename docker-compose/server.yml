@@ -2,7 +2,9 @@ version: "3.7"
 
 services:
   pingtunnelServer:
-    image: esrrhs/pingtunnel:latest
+    image: pingtunnel:latest
     restart: always
     network_mode: host
-    command: "./pingtunnel -type server -key ${KEY}"
+    environment:
+      - ACTION=server
+      - ARGS=--key=11223344

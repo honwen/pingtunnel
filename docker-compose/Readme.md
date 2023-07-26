@@ -1,15 +1,24 @@
-Deploy with docker-compose
-===========================
- **First** edit `.env` file in this directory to your appropriate value.
+# Deploy with docker-compose
+
+**First** edit `.env` file in this directory to your appropriate value.
 
 **Then** run stack with these commands:
 
-- in the server
+- build image
+
+```shell
+ocker build -t pingtunnel .
 ```
+
+- in the server
+
+```shell
 docker-compose -f server.yml up -d
 ```
+
 - in client machine
-```
+
+```shell
 docker-compose -f client.yml up -d
 ```
 

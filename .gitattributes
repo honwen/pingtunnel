@@ -1,0 +1,2 @@
+# MMDB
+*.mmdb filter=lfs diff=lfs merge=lfs -text

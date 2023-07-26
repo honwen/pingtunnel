@@ -2,13 +2,15 @@ package pingtunnel
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"testing"
+
+	"github.com/esrrhs/pingtunnel/pkg/msg"
+	"google.golang.org/protobuf/proto"
 )
 
 func Test0001(t *testing.T) {
 
-	my := &MyMsg{}
+	my := &msg.PingMsg{}
 	my.Id = "12345"
 	my.Target = "111:11"
 	my.Type = 12
@@ -16,7 +18,7 @@ func Test0001(t *testing.T) {
 	dst, _ := proto.Marshal(my)
 	fmt.Println("dst = ", dst)
 
-	my1 := &MyMsg{}
+	my1 := &msg.PingMsg{}
 	proto.Unmarshal(dst, my1)
 	fmt.Println("my1 = ", my1)
 	fmt.Println("my1.Data = ", my1.Data)
